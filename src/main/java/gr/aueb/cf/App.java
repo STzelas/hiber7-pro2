@@ -60,8 +60,8 @@ public class App {
 //
 //        teachers.forEach(System.out::println);
 
-        // Πόσοι teachers είναι ανα περιοχή
 
+        // Πόσοι teachers είναι ανα περιοχή
         String sql = "SELECT r.title, COUNT(t) FROM Region r LEFT JOIN r.teachers t " +
                 "WHERE t.isActive = false OR t.isActive IS NULL GROUP BY r.title";
 
@@ -74,10 +74,6 @@ public class App {
             }
             System.out.println();
         }
-
-
-
-
 
 
         // Here the transaction ends
