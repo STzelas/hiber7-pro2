@@ -9,6 +9,10 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.TypedQuery;
+import jakarta.persistence.criteria.CriteriaBuilder;
+import jakarta.persistence.criteria.CriteriaQuery;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Root;
 
 import java.lang.reflect.Type;
 import java.time.LocalDateTime;
@@ -62,18 +66,36 @@ public class App {
 
 
         // Πόσοι teachers είναι ανα περιοχή
-        String sql = "SELECT r.title, COUNT(t) FROM Region r LEFT JOIN r.teachers t " +
-                "WHERE t.isActive = false OR t.isActive IS NULL GROUP BY r.title";
+//        String sql = "SELECT r.title, COUNT(t) FROM Region r LEFT JOIN r.teachers t " +
+//                "WHERE t.isActive = false OR t.isActive IS NULL GROUP BY r.title";
+//
+//        TypedQuery<Object[]> query = em.createQuery(sql, Object[].class);
+//        List<Object[]> teachersPerRegion = query.getResultList();
+//
+//        for (Object[] el : teachersPerRegion) {
+//            for (Object item : el) {
+//                System.out.print(item + " ");
+//            }
+//            System.out.println();
+//        }
 
-        TypedQuery<Object[]> query = em.createQuery(sql, Object[].class);
-        List<Object[]> teachersPerRegion = query.getResultList();
+        // Criteria API
 
-        for (Object[] el : teachersPerRegion) {
-            for (Object item : el) {
-                System.out.print(item + " ");
-            }
-            System.out.println();
-        }
+        // Find όλους τους active teachers σε ένα region
+        CriteriaBuilder cb = em.getCriteriaBuilder();
+        CriteriaQuery<Teacher> query = cb.createQuery(Teacher.class);
+        Root<Teacher> teacherRoot = query.from(Teacher.class);
+        Join<Teacher, Region> region = teacherRoot.join("region");
+
+        query.select(teacherRoot).where(
+                cb.and(
+                      cb.isTrue(teacherRoot.get("isActive")),
+                      cb.equal(region.get("title"), "Θεσσαλονίκη")
+                )  // param
+        );
+
+        List<Teacher> teachers = em.createQuery(query).getResultList();
+        teachers.forEach(System.out::println);
 
 
         // Here the transaction ends
